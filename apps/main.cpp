@@ -16,7 +16,7 @@
 class EMGLogger {
 public:
     static constexpr int   CALIBRATION_SAMPLES = 500;  // ~0.6s at 860SPS
-    static constexpr int   RMS_WINDOW          = 50;
+    static constexpr int   RMS_WINDOW          = 20;
     static constexpr float FLEX_MULTIPLIER     = 1.5f;
     static constexpr float STRONG_MULTIPLIER   = 3.0f;
 
