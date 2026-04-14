@@ -10,6 +10,7 @@ find_library(I2C_LIB i2c REQUIRED)
 # ── EMG sensor library ───────────────────────────────────────────────────────
 add_library(emgsensors
     src/sensors/EMGSensors.cpp
+    src/EMGLogger.cpp
 )
 
 target_include_directories(emgsensors
