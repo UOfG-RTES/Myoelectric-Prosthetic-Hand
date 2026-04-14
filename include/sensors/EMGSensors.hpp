@@ -34,9 +34,33 @@ struct EMGSettings {
 /**
  * @brief ADS1115 EMG sensor driver.
  *
- * Wraps I2C access and delivers samples via a std::function callback.
- * Timing is established by blocking I2C reads in a worker thread — no
- * sleep() or polling.
+ * Wraps I²C access to the ADS1115 16-bit ADC and delivers samples to the
+ * caller via a registered std::function callback.
+ *
+ * ── Why a callback, not a queue? ────────────────────────────────────────────
+ * A callback (std::function) was chosen over an internal queue or shared
+ * buffer for three reasons:
+ *   1. Decoupling — the driver is independent of any particular consumer.
+ *      Swapping or adding consumers (e.g. logger, plotter, motor controller)
+ *      requires no change to this class.
+ *   2. Zero-copy delivery — the sample is passed directly from the worker
+ *      thread to the consumer on every call, with no heap allocation.
+ *      At 860 SPS this avoids ~860 allocations/second.
+ *   3. Minimal internal state — no mutex or condition variable is needed
+ *      inside the driver, which reduces lock contention and complexity.
+ * Trade-off: the callback executes on the worker thread.  Consumers must
+ * either be thread-safe or complete quickly enough not to stall sampling.
+ *
+ * ── Latency budget ──────────────────────────────────────────────────────────
+ *  • ADS1115 conversion time  : 1/SPS  (1.16 ms at 860 SPS)
+ *  • I²C register write+read  : ~0.10 ms per transaction
+ *  • Callback invocation      : <0.01 ms
+ *  One-sample pipeline latency: ~1.26 ms
+ *  After a 20-sample RMS window: ~24 ms end-to-end (muscle → classification)
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ * Timing is established by blocking on the ADS1115 OS (operational status)
+ * bit — no sleep() or busy-polling.
  */
 class EMGSensors {
 public:
