@@ -88,8 +88,8 @@ void EMGLogger::onSample(const EMGSample& s) {
     file_ << ms << "," << emg << "," << rms << ","
           << baseline_rms_ << "," << state << "\n";
 
-    printf("%6ld ms  RMS: %.4fV  ratio: %.2fx  [%s]\n",
-           ms, rms, ratio, state);
+    // printf("%6ld ms  RMS: %.4fV  ratio: %.2fx  [%s]\n",ms, rms, ratio, state);
+    printf("RMS: %.4f\n", rms);
 }
 
 float EMGLogger::computeRMS(const std::deque<float>& buf) {

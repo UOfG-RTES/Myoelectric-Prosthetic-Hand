@@ -39,7 +39,7 @@ int main() {
     cfg.i2c_bus     = 1;
     cfg.i2c_address = 0x48;
     cfg.sample_rate = 860;
-    cfg.pga_gain    = 4.096f;
+    cfg.pga_gain    = 0.512f;
 
     EMGSensors emg(cfg);
     emg.registerCallback([&](const EMGSample& s) {

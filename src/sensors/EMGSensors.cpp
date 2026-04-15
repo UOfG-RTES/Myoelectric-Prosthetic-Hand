@@ -71,8 +71,7 @@ uint16_t EMGSensors::drRateConfig() const {
 }
 
 void EMGSensors::startConversion(int channel) {
-    uint16_t config = OS_START | MUX_CH[channel] | PGA_0512
-                    | MODE_SINGLE | drRateConfig() | COMP_DISABLE;
+    uint16_t config = OS_START | MUX_CH[channel] | PGA_0512 | MODE_SINGLE | drRateConfig() | COMP_DISABLE;
     uint8_t buf[3] = {
         REG_CONFIG,
         static_cast<uint8_t>((config >> 8) & 0xFF),
@@ -108,7 +107,7 @@ void EMGSensors::worker() {
           int16_t raw = readConversion(2);
           sample.ch2  = toVolts(raw);
 
-          printf("RAW ADC: %6d  Voltage: %.4fV\n", raw,sample.ch2);
+        // printf("RAW ADC: %6d  Voltage: %.4fV\n", raw,sample.ch2);
 
           if (callback_ && running_)
               callback_(sample);
