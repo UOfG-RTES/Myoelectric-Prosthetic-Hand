@@ -30,7 +30,7 @@ class EMGLogger {
 public:
     // ── Tuning constants ──────────────────────────────────────────────────────
     static constexpr int   CALIBRATION_SAMPLES = 500;  ///< ~0.6 s at 860 SPS
-    static constexpr int   RMS_WINDOW          = 20;   ///< Rolling RMS window
+    static constexpr int   RMS_WINDOW          = 50;   ///< Rolling RMS window
     static constexpr float FLEX_MULTIPLIER     = 1.5f; ///< Rest → Flex boundary
     static constexpr float STRONG_MULTIPLIER   = 3.0f; ///< Flex → Strong boundary
 

@@ -28,7 +28,7 @@ struct EMGSettings {
     int   i2c_bus     = 1;      ///< I2C bus number (usually 1 on Raspberry Pi)
     int   i2c_address = 0x48;   ///< ADS1115 I2C address (ADDR low = 0x48)
     int   sample_rate = 128;    ///< SPS: 8,16,32,64,128,250,475,860
-    float pga_gain    = 4.096f; ///< Full-scale range in volts
+    float pga_gain    = 0.512f; ///< Full-scale range in volts
 };
 
 /**

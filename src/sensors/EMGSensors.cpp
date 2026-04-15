@@ -10,6 +10,7 @@
 
 static constexpr uint16_t OS_START     = 0x8000;
 static constexpr uint16_t PGA_4096     = 0x0200;
+static constexpr uint16_t PGA_0512     = 0x0800;
 static constexpr uint16_t MODE_SINGLE  = 0x0100;
 static constexpr uint16_t COMP_DISABLE = 0x0003;
 
@@ -70,7 +71,7 @@ uint16_t EMGSensors::drRateConfig() const {
 }
 
 void EMGSensors::startConversion(int channel) {
-    uint16_t config = OS_START | MUX_CH[channel] | PGA_4096
+    uint16_t config = OS_START | MUX_CH[channel] | PGA_0512
                     | MODE_SINGLE | drRateConfig() | COMP_DISABLE;
     uint8_t buf[3] = {
         REG_CONFIG,
@@ -101,14 +102,15 @@ float EMGSensors::toVolts(int16_t raw) const {
 
 void EMGSensors::worker() {
     while (running_) {
-        EMGSample sample{};
+          EMGSample sample{};
 
-        // Only read CH2 — that's where the EMG sensor is connected.
-        // One channel = 4x faster than reading all four.
-        startConversion(2);
-        sample.ch2 = toVolts(readConversion(2));
+          startConversion(2);
+          int16_t raw = readConversion(2);
+          sample.ch2  = toVolts(raw);
 
-        if (callback_ && running_)
-            callback_(sample);
-    }
+          printf("RAW ADC: %6d  Voltage: %.4fV\n", raw,sample.ch2);
+
+          if (callback_ && running_)
+              callback_(sample);
+      }
 }
