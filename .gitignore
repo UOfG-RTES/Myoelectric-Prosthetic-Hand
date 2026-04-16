@@ -1,3 +1,4 @@
 build/
 .CLAUDE.md
 *.csv
+*.md
