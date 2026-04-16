@@ -14,6 +14,7 @@ extern "C" {
  * @brief Physical voltage readings from all 4 EMG channels (in Volts).
  */
 struct EMGSample {
+    int16_t raw_ch2 = 0;
     float ch0 = 0.f;
     float ch1 = 0.f;
     float ch2 = 0.f;
