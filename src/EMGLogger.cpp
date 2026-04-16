@@ -2,8 +2,8 @@
 
 #include <cstdio>
 #include <cmath>
-#include <numeric>
 #include <algorithm>
+#include <numeric>
 #include <stdexcept>
 #include <thread>
 #include <chrono>
@@ -13,7 +13,7 @@ EMGLogger::EMGLogger(const std::string& filename) {
     if (!file_.is_open())
         throw std::runtime_error("Cannot open log file: " + filename);
 
-    file_ << "timestamp_ms,emg_voltage_V,rms_V,baseline_rms_V,state\n";
+    file_ << "timestamp_ms,raw_adc,emg_voltage_V,rms_V,ratio,state\n";
     start_time_ = std::chrono::steady_clock::now();
 
     // Give the user time to relax before sampling starts.
@@ -35,11 +35,9 @@ void EMGLogger::onSample(const EMGSample& s) {
 
     float emg = s.ch2;
 
-    rms_window_.push_back(emg);
-    if (static_cast<int>(rms_window_.size()) > RMS_WINDOW)
-        rms_window_.pop_front();
-
-    float rms = computeRMS(rms_window_);
+    // EMA of squared voltage — decays immediately when signal drops (no sticky states)
+    ema_sq_   = EMA_ALPHA * (emg * emg) + (1.0f - EMA_ALPHA) * ema_sq_;
+    float rms = std::sqrt(ema_sq_);
 
     // ── Calibration phase ─────────────────────────────────────────────────────
     if (!calibrated_) {
@@ -60,41 +58,37 @@ void EMGLogger::onSample(const EMGSample& s) {
                             / static_cast<float>(keep);
             calibrated_ = true;
 
-            printf("\nBaseline RMS: %.4fV\n", baseline_rms_);
-            printf("Flex threshold:   %.4fV (%.1fx baseline)\n",
-                   baseline_rms_ * FLEX_MULTIPLIER, FLEX_MULTIPLIER);
-            printf("Strong threshold: %.4fV (%.1fx baseline)\n\n",
-                   baseline_rms_ * STRONG_MULTIPLIER, STRONG_MULTIPLIER);
+            printf("\nBaseline EMA : %.4fV\n", baseline_rms_);
+            printf("ENGAGE  (open  → close) : ratio > %.1fx  =  EMA > %.4fV\n",
+                   FLEX_ENGAGE,   baseline_rms_ * FLEX_ENGAGE);
+            printf("RELEASE (close → open)  : ratio < %.1fx  =  EMA < %.4fV\n",
+                   FLEX_RELEASE,  baseline_rms_ * FLEX_RELEASE);
+            printf("HOLD    (no change)     : %.1fx ≤ ratio ≤ %.1fx\n\n",
+                   FLEX_RELEASE, FLEX_ENGAGE);
             printf("Now flex and relax!\n\n");
         }
         return;
     }
 
-    // ── Detection phase ───────────────────────────────────────────────────────
+    // ── Detection phase — two-state hysteresis ────────────────────────────────
     float ratio = rms / baseline_rms_;
 
-    const char* state;
-    if (ratio > STRONG_MULTIPLIER)
-        state = "strong_flex";
-    else if (ratio > FLEX_MULTIPLIER)
-        state = "flex";
-    else
-        state = "rest";
+    if (!hand_closed_ && ratio > FLEX_ENGAGE)
+        hand_closed_ = true;          // open → close
+    else if (hand_closed_ && ratio < FLEX_RELEASE)
+        hand_closed_ = false;         // close → open
+    // else: ratio in hysteresis band — hold current state, no change
+
+    const char* state = hand_closed_ ? "close" : "open";
 
     auto now = std::chrono::steady_clock::now();
     long ms  = std::chrono::duration_cast<std::chrono::milliseconds>(
                    now - start_time_).count();
 
-    file_ << ms << "," << emg << "," << rms << ","
-          << baseline_rms_ << "," << state << "\n";
+    file_ << ms << "," << s.raw_ch2 << "," << emg << ","
+          << rms << "," << ratio << "," << state << "\n";
 
-    // printf("%6ld ms  RMS: %.4fV  ratio: %.2fx  [%s]\n",ms, rms, ratio, state);
-    printf("RMS: %.4f\n", rms);
+    printf("%6ld ms | RAW: %6d | Voltage: %.4fV | EMA: %.4fV | Ratio: %.2fx | [%-5s]\n",
+           ms, s.raw_ch2, emg, rms, ratio, state);
 }
 
-float EMGLogger::computeRMS(const std::deque<float>& buf) {
-    if (buf.empty()) return 0.0f;
-    float sum = 0.0f;
-    for (float v : buf) sum += v * v;
-    return std::sqrt(sum / static_cast<float>(buf.size()));
-}

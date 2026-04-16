@@ -104,10 +104,9 @@ void EMGSensors::worker() {
           EMGSample sample{};
 
           startConversion(2);
-          int16_t raw = readConversion(2);
-          sample.ch2  = toVolts(raw);
-
-        // printf("RAW ADC: %6d  Voltage: %.4fV\n", raw,sample.ch2);
+          int16_t raw  = readConversion(2);
+          sample.raw_ch2 = raw;
+          sample.ch2     = toVolts(raw);
 
           if (callback_ && running_)
               callback_(sample);
