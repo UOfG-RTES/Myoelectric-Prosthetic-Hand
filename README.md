@@ -85,8 +85,8 @@ The MyoWare 2.0 sensor is placed on the **forearm flexor muscle group** (flexor 
 
 | State | Photo |
 |---|---|
-| **Fist clenched (flex)** | ![MyoWare sensor — flex](sensor_flex.png) |
-| **Hand relaxed (rest)** | ![MyoWare sensor — rest](sensor_rest.png) |
+| **Fist clenched (flex)** | ![MyoWare sensor — flex](/docs/sensor_flex.png) |
+| **Hand relaxed (rest)** | ![MyoWare sensor — rest](/docs/sensor_rest.png) |
 
 Correct electrode placement is critical — a shift of even 10–20 mm significantly changes baseline RMS and threshold ratios. The 6-second calibration phase at startup compensates for placement variation between sessions.
 
@@ -298,7 +298,7 @@ Five recording sessions were captured across the development and debugging phase
 
 ### Cross-Session Summary
 
-![Cross-session summary](plot_summary.png)
+![Cross-session summary](/docs/plot_summary.png)
 
 | File | Samples | Duration | States |
 |---|---|---|---|
@@ -314,7 +314,7 @@ Five recording sessions were captured across the development and debugging phase
 
 Pure resting recording used to validate that the noise floor stays well below the 1.2× release threshold. EMA ratio maximum observed: **1.121×** — confirming a comfortable margin before the 1.2× release threshold triggers.
 
-![Rest baseline plots](plot_rest.png)
+![Rest baseline plots](/docs/plot_rest.png)
 
 ---
 
@@ -322,7 +322,7 @@ Pure resting recording used to validate that the noise floor stays well below th
 
 Targeted flexing session capturing the transition between all three states. Shows the EMA tracking contraction onset and decay in real time.
 
-![Flex session plots](plot_flex.png)
+![Flex session plots](/docs/plot_flex.png)
 
 ---
 
@@ -330,7 +330,7 @@ Targeted flexing session capturing the transition between all three states. Show
 
 Recorded with the ADS1115 at ±4.096 V (default) — only ~5% of ADC range used. Raw ADC counts and the resulting compressed voltage range are visible. Classification still functioned via ratios, but absolute voltage values were unreliable for analysis.
 
-![Early session plots](plot_emg_log.png)
+![Early session plots](/docs/plot_emg_log.png)
 
 ---
 
@@ -338,7 +338,7 @@ Recorded with the ADS1115 at ±4.096 V (default) — only ~5% of ADC range used.
 
 Longer session with sustained transitions across rest, flex, and strong flex. Includes RMS baseline tracking.
 
-![Extended session plots](plot_emg_log1.png)
+![Extended session plots](/docs/plot_emg_log1.png)
 
 ---
 
@@ -346,7 +346,7 @@ Longer session with sustained transitions across rest, flex, and strong flex. In
 
 The primary validation dataset — 117 seconds of natural use. Classification boundaries align exactly with the data.
 
-![Final session plots](plot_final.png)
+![Final session plots](/docs/plot_final.png)
 
 **Classification performance (baseline = 0.0533 V):**
 
