@@ -2,6 +2,7 @@
 
 #include "motor/PCA9685.hpp"
 #include <functional>
+#include <string>
 
 /**
  * @brief Velocity-based two-servo hand controller driven by EMG ratio.
@@ -26,8 +27,8 @@ public:
     // ── Tuning constants ──────────────────────────────────────────────────────
     static constexpr float ENGAGE_RATIO    = 1.5f;  ///< ratio to start closing
     static constexpr float RELEASE_RATIO   = 1.2f;  ///< ratio to start opening
-    static constexpr float MAX_RATIO       = 6.0f;  ///< ratio at which max speed is reached
-    static constexpr float MAX_SPEED_DEG   = 0.3f;  ///< degrees moved per sample at max ratio
+    static constexpr float MAX_RATIO       = 2.5f;  ///< ratio at which max speed is reached
+    static constexpr float MAX_SPEED_DEG   = 1.0f;  ///< degrees moved per sample at max ratio
 
     // ── Servo angle limits (tune after physical calibration) ──────────────────
     static constexpr float CLOSE_SERVO_OPEN   = 0.0f;   ///< close servo angle → hand open
@@ -36,8 +37,8 @@ public:
     static constexpr float OPEN_SERVO_CLOSED  = 0.0f;   ///< open servo angle → hand closed
 
     // ── Channel assignments ───────────────────────────────────────────────────
-    static constexpr int CLOSE_CHANNEL = 0;
-    static constexpr int OPEN_CHANNEL  = 2;
+    static constexpr int CLOSE_CHANNEL = 1;
+    static constexpr int OPEN_CHANNEL  = 15;  // physical channel 16, 0-indexed
 
     enum class HandState { OPEN, CLOSING, HOLDING, OPENING };
 
@@ -51,7 +52,7 @@ public:
      *        Call this once per EMG sample after EMA classification.
      * @param ratio  Current EMA / baseline_rms ratio
      */
-    void update(float ratio);
+    std::string update(float ratio);
 
     HandState state() const { return state_; }
 

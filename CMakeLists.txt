@@ -13,6 +13,21 @@ add_library(emgsensors
     src/EMGLogger.cpp
 )
 
+# ── Motor control library ─────────────────────────────────────────────────────
+add_library(motorcontrol
+    src/motor/PCA9685.cpp
+    src/motor/MotorController.cpp
+)
+
+target_include_directories(motorcontrol
+    PUBLIC include
+)
+
+target_link_libraries(motorcontrol
+    PUBLIC
+        ${I2C_LIB}
+)
+
 target_include_directories(emgsensors
     PUBLIC include
 )
@@ -30,4 +45,14 @@ add_executable(main
 
 target_link_libraries(main
     PRIVATE emgsensors
+    PRIVATE motorcontrol
+)
+
+# ── Servo calibration utility ─────────────────────────────────────────────────
+add_executable(servo_calibration
+    apps/servo_calibration.cpp
+)
+
+target_link_libraries(servo_calibration
+    PRIVATE motorcontrol
 )

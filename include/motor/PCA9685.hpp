@@ -20,8 +20,8 @@ extern "C" {
 class PCA9685 {
 public:
     // Servo pulse width in counts (at 50 Hz, 12-bit)
-    static constexpr uint16_t SERVO_MIN = 205;  ///< 1 ms pulse → 0°
-    static constexpr uint16_t SERVO_MAX = 410;  ///< 2 ms pulse → 180°
+    static constexpr uint16_t SERVO_MIN = 102;  ///< 0.5 ms pulse → 0°
+    static constexpr uint16_t SERVO_MAX = 512;  ///< 2.5 ms pulse → 180°
 
     /**
      * @param i2c_bus     I²C bus number (1 on Raspberry Pi)

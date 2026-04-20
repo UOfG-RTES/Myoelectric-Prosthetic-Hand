@@ -13,7 +13,7 @@ EMGLogger::EMGLogger(const std::string& filename) {
     if (!file_.is_open())
         throw std::runtime_error("Cannot open log file: " + filename);
 
-    file_ << "timestamp_ms,raw_adc,emg_voltage_V,rms_V,ratio,state\n";
+    file_ << "timestamp_ms,raw_adc,emg_voltage_V,ema_rms_V,ratio,emg_state,motor_state\n";
     start_time_ = std::chrono::steady_clock::now();
 
     // Give the user time to relax before sampling starts.
@@ -28,6 +28,10 @@ EMGLogger::EMGLogger(const std::string& filename) {
 
 EMGLogger::~EMGLogger() {
     if (file_.is_open()) file_.close();
+}
+
+void EMGLogger::registerMotorCallback(MotorCallback cb) {
+    motor_cb_ = std::move(cb);
 }
 
 void EMGLogger::onSample(const EMGSample& s) {
@@ -85,10 +89,14 @@ void EMGLogger::onSample(const EMGSample& s) {
     long ms  = std::chrono::duration_cast<std::chrono::milliseconds>(
                    now - start_time_).count();
 
-    file_ << ms << "," << s.raw_ch2 << "," << emg << ","
-          << rms << "," << ratio << "," << state << "\n";
+    if (motor_cb_) last_motor_state_ = motor_cb_(ratio);
 
-    printf("%6ld ms | RAW: %6d | Voltage: %.4fV | EMA: %.4fV | Ratio: %.2fx | [%-5s]\n",
-           ms, s.raw_ch2, emg, rms, ratio, state);
+    file_ << ms << "," << s.raw_ch2 << "," << emg << ","
+          << rms << "," << ratio << "," << state << ","
+          << last_motor_state_ << "\n";
+
+    if (++sample_count_ % PRINT_EVERY == 0)
+        printf("%6ld ms | RAW: %6d | %.4fV | EMA: %.4fV | Ratio: %.2fx | EMG: %-5s | Motor: %s\n",
+               ms, s.raw_ch2, emg, rms, ratio, state, last_motor_state_.c_str());
 }
 

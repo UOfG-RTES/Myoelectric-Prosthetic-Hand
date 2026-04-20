@@ -1,6 +1,6 @@
 #include "motor/MotorController.hpp"
-#include <cstdio>
 #include <algorithm>
+#include <string>
 
 MotorController::MotorController(PCA9685& pwm)
     : pwm_(pwm) {}
@@ -13,34 +13,25 @@ void MotorController::init() {
     printf("MotorController: initialised — hand OPEN\n");
 }
 
-void MotorController::update(float ratio) {
+std::string MotorController::update(float ratio) {
     if (ratio > ENGAGE_RATIO) {
-        // ── CLOSING ───────────────────────────────────────────────────────────
         state_ = HandState::CLOSING;
         float speed = speedFromRatio(ratio);
-
         close_angle_ = std::min(close_angle_ + speed, CLOSE_SERVO_CLOSED);
         open_angle_  = std::max(open_angle_  - speed, OPEN_SERVO_CLOSED);
-
         applyAngles();
-        printf("CLOSING | ratio: %.2fx | speed: %.2f°/s | close: %.1f° | open: %.1f°\n",
-               ratio, speed, close_angle_, open_angle_);
+        return "CLOSING";
 
     } else if (ratio < RELEASE_RATIO) {
-        // ── OPENING ───────────────────────────────────────────────────────────
         state_ = HandState::OPENING;
-        float speed = speedFromRatio(ENGAGE_RATIO);  // open at steady speed
-
-        close_angle_ = std::max(close_angle_ - speed, CLOSE_SERVO_OPEN);
-        open_angle_  = std::min(open_angle_  + speed, OPEN_SERVO_OPEN);
-
+        close_angle_ = std::max(close_angle_ - MAX_SPEED_DEG, CLOSE_SERVO_OPEN);
+        open_angle_  = std::min(open_angle_  + MAX_SPEED_DEG, OPEN_SERVO_OPEN);
         applyAngles();
-        printf("OPENING  | ratio: %.2fx | speed: %.2f°/s | close: %.1f° | open: %.1f°\n",
-               ratio, speed, close_angle_, open_angle_);
+        return "OPENING";
 
     } else {
-        // ── HOLDING (hysteresis band 1.2× – 1.5×) ────────────────────────────
         state_ = HandState::HOLDING;
+        return "HOLDING";
     }
 }
 

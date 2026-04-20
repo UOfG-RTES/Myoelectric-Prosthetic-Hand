@@ -3,6 +3,7 @@
 #include "sensors/EMGSensors.hpp"
 
 #include <fstream>
+#include <functional>
 #include <vector>
 #include <string>
 #include <chrono>
@@ -31,9 +32,10 @@ class EMGLogger {
 public:
     // ── Tuning constants ──────────────────────────────────────────────────────
     static constexpr int   CALIBRATION_SAMPLES = 500;   ///< ~0.6 s at 860 SPS
-    static constexpr float EMA_ALPHA           = 0.05f; ///< EMA smoothing factor (0<α≤1). Higher = faster response, more noise.
+    static constexpr float EMA_ALPHA           = 0.05f; ///< EMA smoothing factor
     static constexpr float FLEX_ENGAGE         = 1.5f;  ///< open → close : ratio must exceed this
     static constexpr float FLEX_RELEASE        = 1.2f;  ///< close → open : ratio must drop below this
+    static constexpr int   PRINT_EVERY         = 50;    ///< print to terminal every N samples (~17 Hz)
 
     /**
      * @param filename  Path to CSV output file.
@@ -58,14 +60,28 @@ public:
      */
     void onSample(const EMGSample& s);
 
+    /**
+     * @brief Register a callback invoked after every classified sample.
+     *
+     * Called with the current EMA/baseline ratio on every sample after
+     * calibration completes. Runs on the EMGSensors worker thread — keep it fast.
+     *
+     * @param cb  Callable accepting float ratio. Pass nullptr to clear.
+     */
+    using MotorCallback = std::function<std::string(float ratio)>;
+    void registerMotorCallback(MotorCallback cb);
+
 private:
     std::ofstream  file_;
     std::chrono::steady_clock::time_point start_time_;
 
     bool calibration_start_ = false;
     bool calibrated_        = false;
-    bool hand_closed_       = false; ///< Current hand state — drives hysteresis logic
+    bool hand_closed_       = false;
     std::vector<float> calibration_buf_;
-    float baseline_rms_ = 0.0f;
-    float ema_sq_       = 0.0f; ///< EMA of squared voltage — sqrt gives envelope
+    float         baseline_rms_    = 0.0f;
+    float         ema_sq_          = 0.0f;
+    int           sample_count_    = 0;
+    std::string   last_motor_state_ = "INIT";
+    MotorCallback motor_cb_;
 };
