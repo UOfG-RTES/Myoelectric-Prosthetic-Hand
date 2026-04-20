@@ -430,12 +430,12 @@ sudo i2cdetect -y 1
 ### Build
 
 ```bash
-git clone https://github.com/<your-org>/RTES_EMG.git
-cd RTES_EMG
+git clone https://github.com/UOfG-RTES/Myoelectric-Prosthetic-Hand.git
+cd Myoelectric-Prosthetic-Hand
 mkdir build && cd build
 
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j4
+make 
 ```
 
 **Requirements:** `cmake >= 3.16`, `g++` (C++17), `libi2c-dev`, `pthread`.
@@ -445,7 +445,7 @@ make -j4
 ## Running the Application
 
 ```bash
-sudo ./main
+./main
 ```
 
 **Startup sequence:**
